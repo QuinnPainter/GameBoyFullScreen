@@ -35,11 +35,18 @@ $(ROMNAME): $(patsubst $(SRCDIR)/%.asm,$(OBJDIR)/%.o,$(SOURCES))
 	$(LINK) $(LDFLAGS) -o $(BINDIR)/$@.$(ROMEXT) -m $(BINDIR)/$@.map -n $(BINDIR)/$@.sym $^
 	$(FIX) $(FIXFLAGS) $(BINDIR)/$@.$(ROMEXT)
 
-$(OBJDIR)/%.o: $(SRCDIR)/%.asm | $(OBJDIR) $(BINDIR)
+$(OBJDIR)/%.o: $(SRCDIR)/%.asm force | $(OBJDIR) $(BINDIR)
 	$(ASM) $(ASFLAGS) -o $(OBJDIR)/$*.o $<
 
 $(OUTPUT_IMAGE): $(INPUT_IMAGE) | $(OBJDIR)
 	$(GFX) -o $(OUTPUT_IMAGE) $(INPUT_IMAGE)
+
+# this target does nothing. it is added as a requirement to the object file assembly
+# to force recompile all the code every time
+# needed because files that INCBIN asset files won't know if those files have changed
+# so by default, they won't be compiled, and the asset changes are ignored in the build
+# maybe should find a better solution for this later?
+force: ;
 
 $(OBJDIR):
 	$(MKDIR_P) $(OBJDIR)
